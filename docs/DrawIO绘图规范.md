@@ -11,7 +11,7 @@
 > - `drawio_check.py`、`drawio_deep_check.py`：两个自查脚本
 > - `new_diagram.py`：新建一张图的工作文件夹（复制上面三个文件 + 能直接跑的生成脚本模板）
 >
-> 样板：`examples/mp_pipeline/`（4 页成图 + 生成脚本 + 三份中间文档）
+> 样板：`examples/mp_pipeline/`（4 页成图 + 生成脚本 + 三份中间文档）；风格参考：`docs/ref/`（同学的 SuperO3 原图）
 
 ## 一、画新图的流程
 
@@ -33,7 +33,7 @@ text.md（文字描述）→ ascii.md（ASCII 图）→ design.md（合并 + 图
 | 文字描述行数上限 | 150 |
 | 图中文字语言 | 中英结合：模块名、信号名、术语用英文，短注释用中文（覆盖提示词模板里的 English） |
 | 作者署名 | `by Pinxu Wang` |
-| 样板图 | `examples/mp_pipeline/` 的成图 |
+| 样板图 | `examples/mp_pipeline/` 的成图；风格参考 `docs/ref/` |
 | 强调点、视图 | 自己按设计定，汇报里说明；总览页必须单独讲得清 |
 
 ## 二、深色演示风格（新图默认）
