@@ -53,6 +53,7 @@ total = 0
 for d in root.iter("diagram"):
     name = d.get("name")
     verts, edges = [], []
+    skipped_edges = 0
     for el in d.iter():
         if el.tag not in ("mxCell", "UserObject"):
             continue
@@ -64,14 +65,18 @@ for d in root.iter("diagram"):
         st = cell.get("style") or ""
         g = cell.find("mxGeometry")
         if cell.get("vertex") == "1":
-            box = tuple(float(g.get(k)) for k in ("x", "y", "width", "height"))
+            box = tuple(float(g.get(k) or 0) for k in ("x", "y", "width", "height"))  # draw.io 省略为 0 的坐标
             verts.append(dict(id=cid, box=box, style=st, val=val or ""))
         elif cell.get("edge") == "1":
-            pts = [(float(p.get("x")), float(p.get("y"))) for p in g.iter("mxPoint")]
-            sp = [p for p in g.iter("mxPoint") if p.get("as") == "sourcePoint"][0]
-            tp = [p for p in g.iter("mxPoint") if p.get("as") == "targetPoint"][0]
-            mids = [(float(p.get("x")), float(p.get("y"))) for p in g.iter("mxPoint") if p.get("as") is None]
-            path_pts = [(float(sp.get("x")), float(sp.get("y")))] + mids + [(float(tp.get("x")), float(tp.get("y")))]
+            sps = [p for p in g.iter("mxPoint") if p.get("as") == "sourcePoint"]
+            tps = [p for p in g.iter("mxPoint") if p.get("as") == "targetPoint"]
+            if not sps or not tps:
+                # 连在模块上、由 draw.io 自动走线的边没有端点坐标，交给看 SVG 的 drawio_check.py
+                skipped_edges += 1
+                continue
+            xy = lambda p: (float(p.get("x") or 0), float(p.get("y") or 0))
+            mids = [xy(p) for p in g.iter("mxPoint") if p.get("as") is None]
+            path_pts = [xy(sps[0])] + mids + [xy(tps[0])]
             edges.append(dict(id=cid, pts=path_pts, style=st, arrow=sty(st, "endArrow") != "none"))
     issues = []
     texts, blocks, markers, dots, containers = [], [], [], [], []
@@ -177,7 +182,8 @@ for d in root.iter("diagram"):
         for ln in strip(v.get("val") if v.get("val") else ""):
             if re.search(CJK + r" [A-Za-z0-9]|[A-Za-z0-9] " + CJK, ln):
                 issues.append(("中英空格", v["id"], ln))
-    print(f"=== {name}: texts={len(texts)} blocks={len(blocks)} markers={len(markers)} edges={len(edges)} issues={len(issues)}")
+    print(f"=== {name}: texts={len(texts)} blocks={len(blocks)} markers={len(markers)} edges={len(edges)} issues={len(issues)}"
+          + (f" (skipped {skipped_edges} auto-routed edges)" if skipped_edges else ""))
     for it in issues:
         print("   ", it)
     total += len(issues)
