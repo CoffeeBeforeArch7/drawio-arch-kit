@@ -152,7 +152,10 @@ class Page:
         self.vertex(cid, x, y, w, h, "",
                     f"rounded=1;arcSize=3;html=1;fillColor={fill};strokeColor={stroke};strokeWidth=1.2;")
         self.containers.append(cid)
-        self.text(cid + "_t", x + 10, y + 6, 90, 20,
+        # 标题框宽按字数估（16px 粗体英文约 9.6px/字，11px 中文约 11px/字）；固定宽度时字会溢出框，
+        # 自查脚本按框算，查不出线从标题上穿过
+        tw_title = round(9.6 * len(title) + 11 * len(cn)) + (12 if cn else 4)
+        self.text(cid + "_t", x + 10, y + 6, tw_title, 20,
                   f'<b>{esc(title)}</b>&nbsp;&nbsp;<font style="font-size:11px" color="{T2}">{esc(cn)}</font>',
                   size=16, color=T1)
         self.text(cid + "_m", x + 10, y + 26, round(6.2 * len(module)) + 4, 14, module, size=10, color=T3, mono=True)

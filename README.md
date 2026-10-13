@@ -56,7 +56,7 @@
 | `docs/DrawIO画图提示词.md` | 四步提示词原文：text → ascii → design → drawio |
 | `tools/drawio_kit.py` | 生成库：配色、版式部件、导出、自查一条龙 |
 | `tools/drawio_check.py` | 自查8项：斜线、线穿模块框、线压文字、框重叠、悬空引用等 |
-| `tools/drawio_deep_check.py` | 补充自查：字压字、字压框、线穿编号圆、箭头悬空、线交叉、中英之间空格 |
+| `tools/drawio_deep_check.py` | 补充自查：字压字、字压框、线穿编号圆、箭头悬空、线交叉、中英之间空格、线被后画的框盖住 |
 | `tools/new_diagram.py` | 新建一张图的工作文件夹：复制上面三个工具，放一个能直接跑的起步模板 |
 | `examples/mp_pipeline/` | 完整范例：三份中间文档、4页.drawio、每页PNG、生成脚本 |
 | `docs/ref/` | 风格参考：同学的4张SuperO3架构图 |

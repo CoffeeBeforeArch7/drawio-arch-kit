@@ -1,5 +1,6 @@
 """drawio 补充自查（配套 docs/DrawIO绘图规范.md 第五节），查 drawio_check.py 查不到的：
-  字压字、字压框、线穿编号圆、箭头终点 / 起点悬空、线与线交叉 / 共线重叠、中英之间多空格
+  字压字、字压框、线穿编号圆、箭头终点 / 起点悬空、线与线交叉 / 共线重叠、中英之间多空格、
+  线被后画的填充框盖住（框按生成顺序在上层，框里那段线连同箭头看不见）
 
 用法：python3 drawio_deep_check.py 图.drawio [--containers id1,id2,...]
   - 多页文件逐页报告；--containers 给出容器框 id（不传就按样式猜：无填充、虚线、arcSize≤3）
@@ -53,6 +54,7 @@ total = 0
 for d in root.iter("diagram"):
     name = d.get("name")
     verts, edges = [], []
+    order = 0
     skipped_edges = 0
     for el in d.iter():
         if el.tag not in ("mxCell", "UserObject"):
@@ -64,9 +66,10 @@ for d in root.iter("diagram"):
         val = el.get("label") if el.tag == "UserObject" else cell.get("value")
         st = cell.get("style") or ""
         g = cell.find("mxGeometry")
+        order += 1
         if cell.get("vertex") == "1":
             box = tuple(float(g.get(k) or 0) for k in ("x", "y", "width", "height"))  # draw.io 省略为 0 的坐标
-            verts.append(dict(id=cid, box=box, style=st, val=val or ""))
+            verts.append(dict(id=cid, box=box, style=st, val=val or "", order=order))
         elif cell.get("edge") == "1":
             sps = [p for p in g.iter("mxPoint") if p.get("as") == "sourcePoint"]
             tps = [p for p in g.iter("mxPoint") if p.get("as") == "targetPoint"]
@@ -77,7 +80,7 @@ for d in root.iter("diagram"):
             xy = lambda p: (float(p.get("x") or 0), float(p.get("y") or 0))
             mids = [xy(p) for p in g.iter("mxPoint") if p.get("as") is None]
             path_pts = [xy(sps[0])] + mids + [xy(tps[0])]
-            edges.append(dict(id=cid, pts=path_pts, style=st, arrow=sty(st, "endArrow") != "none"))
+            edges.append(dict(id=cid, pts=path_pts, style=st, arrow=sty(st, "endArrow") != "none", order=order))
     issues = []
     texts, blocks, markers, dots, containers = [], [], [], [], []
     for v in verts:
@@ -177,6 +180,17 @@ for d in root.iter("diagram"):
             y = hs[0][1]; x = vs[0][0]
             if min(hs[0][0], hs[1][0]) + 1 < x < max(hs[0][0], hs[1][0]) - 1 and min(vs[0][1], vs[1][1]) + 1 < y < max(vs[0][1], vs[1][1]) - 1:
                 issues.append(("线交叉", ia, ib, (x, y)))
+    # 7 线被后画的填充框盖住：draw.io 按生成顺序叠放，后画的有填充的框在上层
+    for e in edges:
+        if "lg_e_" in e["id"]:
+            continue
+        for v in verts:
+            st = v["style"]
+            if (v["order"] < e["order"] or st.startswith("text;") or st.startswith("ellipse")
+                    or "fillColor=none" in st or "fillColor=" not in st):
+                continue
+            if any(seg_hits(p, q, v["box"], 1) for p, q in zip(e["pts"], e["pts"][1:])):
+                issues.append(("线被后画的框盖住", e["id"], v["id"]))
     # 6 中英之间空格
     for v in verts:
         for ln in strip(v.get("val") if v.get("val") else ""):
