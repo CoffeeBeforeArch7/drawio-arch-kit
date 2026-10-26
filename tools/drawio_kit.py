@@ -26,7 +26,7 @@ gen_drawio.py。之后按设计写 pages_*.py（或直接改 gen_drawio.py）：
 范例：examples/mp_pipeline/（4 页成图 + 生成脚本）
 
 换电脑可用环境变量覆盖：DRAWIO（draw.io 可执行文件）、DRAWIO_TOOLS（自查脚本所在目录，默认本文件旁边）、
-DRAWIO_SANS / DRAWIO_MONO（字体）、DRAWIO_AUTHOR（署名）。
+DRAWIO_SANS / DRAWIO_MONO（字体）、DRAWIO_AUTHOR（署名，默认不加）。
 """
 import html
 import os
@@ -58,7 +58,7 @@ def _find_checkers():
 
 
 CHECKERS = _find_checkers()
-AUTHOR = os.environ.get("DRAWIO_AUTHOR", "by Pinxu Wang")
+AUTHOR = os.environ.get("DRAWIO_AUTHOR", "")   # 署名默认不加；要加就设 DRAWIO_AUTHOR
 
 
 def drawio_cmd(*args):
@@ -227,9 +227,8 @@ class Page:
 
 # ====================== 标题、左栏（图例 + 页面导航）、右栏（关键设计决策）======================
 def header(p, title, subtitle, author=AUTHOR):
-    p.text("title", 24, 14, 900, 34,
-           f'<b>{esc(title)}</b>&nbsp;&nbsp;&nbsp;<font style="font-size:15px" color="{T3}">{esc(author)}</font>',
-           size=26, color=T1)
+    sig = f'&nbsp;&nbsp;&nbsp;<font style="font-size:15px" color="{T3}">{esc(author)}</font>' if author else ""
+    p.text("title", 24, 14, 900, 34, f'<b>{esc(title)}</b>{sig}', size=26, color=T1)
     p.text("subtitle", 24, 52, 1400, 20, subtitle, size=13, color=T2)
 
 

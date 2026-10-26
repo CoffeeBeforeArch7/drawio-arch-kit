@@ -94,7 +94,7 @@ python3 gen_drawio.py --export --check      # 写 .drawio、导出每页 PNG、�
 
 ## 换电脑要改的
 
-- 署名：设`DRAWIO_AUTHOR="by 你的名字"`，或改`tools/drawio_kit.py`里的`AUTHOR`
+- 署名：默认不加；要加就设`DRAWIO_AUTHOR="by 你的名字"`，或改`tools/drawio_kit.py`里的`AUTHOR`
 - 字体：默认Helvetica / Menlo（macOS自带）。Windows可设`DRAWIO_SANS=Arial`、`DRAWIO_MONO=Consolas`；
   换了字体字宽会变，跑一遍`--check`再放大看图
 - 自查脚本找不到：设`DRAWIO_TOOLS=<放drawio_check.py的目录>`
